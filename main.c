@@ -4,6 +4,10 @@
 
 #define MULTI 1000      // float*1000 -> int
 #define COUNT_OF_DATA 500
+#define KERNEL_SIZE 5
+#define LAYER_1_CHANNEL 5
+#define LAYER_2_CHANNEL 10
+#define IMAGE_SIZE 28
 
 #pragma DATA_SECTION (dataset, ".array_buf");
 #pragma DATA_ALIGN (dataset, 16);
@@ -38,43 +42,44 @@
 #pragma DATA_SECTION (output, ".array_buf");
 #pragma DATA_ALIGN (output, 16);
 
-int dataset[COUNT_OF_DATA][28][28];
+// format HWCN
+int dataset[COUNT_OF_DATA][IMAGE_SIZE][IMAGE_SIZE];
 int labels[COUNT_OF_DATA];
 int conv1_w[5][5][5];
 int conv1_b[5];
-int conv2_w[10][5][5];
+int conv2_w[5][5][5][10];
 int conv2_b[10];
-int conv3_w[10];
+int conv3_w[10][10];
 int conv3_b[10];
 long input[28][28];
-long layer1_conv[5][24][24];
-long layer1_pool[5][12][12];
-long layer2_conv[10][8][8];
-long layer2_pool[10][4][4];
+long layer1_conv[24][24][5];
+long layer1_pool[12][12][5];
+long layer2_conv[8][8][10];
+long layer2_pool[4][4][10];
 long layer3_pool[10];
 long layer3_conv[10];
 int output;
 
 
-void conv1() { // [1,28,28] * [5,5,5] -> [5,24,24]
-    int c, h, w, x, y;
-    for (c = 0; c < 5; c++) {
+void conv1() { // [28,28,1] * [5,5,1,5] -> [24,24,5]
+    int n, h, w, x, y;
+    for (n = 0; n < 5; n++) {
         for (h = 0; h < 24; h++) {
             for (w = 0; w < 24; w++) {
                 //compute convlution result of one output pixel
                 for (x = 0; x < 5; x++) {
                     for (y = 0; y < 5; y++) {
-                        layer1_conv[c][h][w] += input[h + x][w + y] * conv1_w[c][x][y] + conv1_b[c];
+                        layer1_conv[h][w][n] += input[h + x][w + y] * conv1_w[x][y][n] + conv1_b[n];
                     }
                 }
                 //relu
-                if (layer1_conv[c][h][w] < 0)layer1_conv[c][h][w] = 0;
+                if (layer1_conv[h][w][n] < 0)layer1_conv[h][w][n] = 0;
             }
         }
     }
 }
 
-void pooling1() { // [5,24,24] -> [5,12,12]
+void pooling1() { // [24,24,5] -> [12,12,5]
     int c, h, w, x, y;
     for (c = 0; c < 5; c++) {
         for (h = 0; h < 12; h++) {
@@ -82,8 +87,8 @@ void pooling1() { // [5,24,24] -> [5,12,12]
                 //compute max pooling result of one output pixel
                 for (x = 0; x < 2; x++) {
                     for (y = 0; y < 2; y++) {
-                        if (layer1_pool[c][h][w] < layer1_conv[c][h + x][w + y]) {
-                            layer1_pool[c][h][w] = layer1_conv[c][h + x][w + y];
+                        if (layer1_pool[h][w][c] < layer1_conv[h*2 + x][w*2 + y][c]) {
+                            layer1_pool[h][w][c] = layer1_conv[h*2 + x][w*2 + y][c];
                         }
                     }
                 }
@@ -92,27 +97,28 @@ void pooling1() { // [5,24,24] -> [5,12,12]
     }
 }
 
-void conv2() { // [5,12,12] * [10,5,5] -> [10,8,8]
-    int c, h, w, x, y, z;
-    for (c = 0; c < 10; c++) {
+
+void conv2() { // [12,12,5] * [5,5,5,10] -> [8,8,10]
+    int n, h, w, c, x, y;
+    for (n = 0; n < 10; n++) {
         for (h = 0; h < 8; h++) {
             for (w = 0; w < 8; w++) {
                 //compute convlution result of one output pixel
                 for (x = 0; x < 5; x++) {
                     for (y = 0; y < 5; y++) {
-                        for (z = 0; z < 5; z++) {
-                            layer2_conv[c][h][w] += layer1_pool[h + x][w + y][z] * conv2_w[c][x][y] + conv2_b[c];
+                        for (c = 0; c < 5; c++) {
+                            layer2_conv[h][w][n] += layer1_pool[h + x][w + y][c] * conv2_w[x][y][c][n] + conv2_b[n];
                         }
                     }
                 }
                 //relu
-                if (layer2_conv[c][h][w] < 0)layer2_conv[c][h][w] = 0;
+                if (layer2_conv[h][w][n] < 0)layer2_conv[h][w][n] = 0;
             }
         }
     }
 }
 
-void pooling2() { // [10,8,8] -> [10,4,4]
+void pooling2() { // [8,8,10] -> [4,4,10]
     int c, h, w, x, y;
     for (c = 0; c < 10; c++) {
         for (h = 0; h < 4; h++) {
@@ -120,8 +126,8 @@ void pooling2() { // [10,8,8] -> [10,4,4]
                 //compute max pooling result of one output pixel
                 for (x = 0; x < 2; x++) {
                     for (y = 0; y < 2; y++) {
-                        if (layer2_pool[c][h][w] < layer2_conv[c][h + x][w + y]) {
-                            layer2_pool[c][h][w] = layer2_conv[c][h + x][w + y];
+                        if (layer2_pool[h][w][c] < layer2_conv[h*2 + x][w*2 + y][c]) {
+                            layer2_pool[h][w][c] = layer2_conv[h*2 + x][w*2 + y][c];
                         }
                     }
                 }
@@ -130,24 +136,24 @@ void pooling2() { // [10,8,8] -> [10,4,4]
     }
 }
 
-void pooling3() { // [10,4,4] -> [10,1,1]
-    int c, x, y;
+void pooling3() { // [4,4,10] -> [1,1,10]
+    int h, w, c;
     for (c = 0; c < 10; c++) {
         //compute average pooling result of one output pixel
-        for (x = 0; x < 4; x++) {
-            for (y = 0; y < 4; y++) {
-                layer3_pool[c] += layer2_pool[c][x][y] / 4;
+        for (h = 0; h < 4; h++) {
+            for (w = 0; w < 4; w++) {
+                layer3_pool[c] += layer2_pool[h][w][c] / 4;
             }
         }
     }
 }
 
-void conv3() { // [10,1,1] * [10,1,1] -> [10,1,1]
-    int c, z;
-    for (c = 0; c < 10; c++) {
+void conv3() { // [1,1,10] * [1,1,10,10] -> [1,1,10]
+    int c, n;
+    for (n = 0; n < 10; n++) {
         //compute convlution result of one output pixel
-        for (z = 0; z < 10; z++) {
-            layer3_conv[c] += layer3_pool[z] * conv3_w[c] + conv3_b[c];
+        for (c = 0; c < 10; c++) {
+            layer3_conv[n] += layer3_pool[c] * conv3_w[c][n] + conv3_b[n];
         }
         //no need of softmax activation
     }
@@ -168,20 +174,20 @@ void model_run() {
     }
 }
 
-void get_weights() { // 'CHW'format
+void get_weights() { // 'HWCN'format
 
     FILE * fp;
-    int c, h, w;
+    int h, w, c, n;
     if (NULL == (fp = fopen("..\\data\\conv1_w.txt", "r"))) {
         printf("conv1_w open failed\n");
         exit(1);
     }
     printf("conv1_w open succeed\n");
-    // conv1.shape = [5,5,5]
-    for (c = 0; c < 5; ++c) {
-        for (h = 0; h < 5; ++h) {
-            for (w = 0; w < 5; ++w) {
-                fscanf(fp, "%d", &conv1_w[c][h][w]);
+    // conv1_w.shape = [5,5,1,5]
+    for (h = 0; h < 5; ++h) {
+        for (w = 0; w < 5; ++w) {
+            for (n = 0; n < 5; ++n) {
+                fscanf(fp, "%d", &conv1_w[h][w][n]);
             }
         }
     }
@@ -193,9 +199,9 @@ void get_weights() { // 'CHW'format
         exit(1);
     }
     printf("conv1_b open succeed\n");
-    // conv1.b.shape = [5,1]
-    for (c = 0; c < 5; ++c) {
-        fscanf(fp, "%d", &conv1_b[c]);
+    // conv1_b.shape = [5]
+    for (n = 0; n < 5; ++n) {
+        fscanf(fp, "%d", &conv1_b[n]);
     }
     printf("conv1_b load succeed\n");
     fclose(fp);
@@ -206,11 +212,13 @@ void get_weights() { // 'CHW'format
         exit(1);
     }
     printf("conv2_w open succeed\n");
-    // conv2.shape = [10,5,5]
-    for (c = 0; c < 10; ++c) {
-        for (h = 0; h < 5; ++h) {
-            for (w = 0; w < 5; ++w) {
-                fscanf(fp, "%d", &conv2_w[c][h][w]);
+    // conv2_w.shape = [5,5,5,10]
+    for (h = 0; h < 5; ++h) {
+        for (w = 0; w < 5; ++w) {
+            for (c = 0; c < 5; ++c) {
+                for (n = 0; n < 10; ++n) {
+                    fscanf(fp, "%d", &conv2_w[h][w][c][n]);
+                }
             }
         }
     }
@@ -222,9 +230,9 @@ void get_weights() { // 'CHW'format
         exit(1);
     }
     printf("conv2_b open succeed\n");
-    // conv2.b.shape = [10,1]
-    for (c = 0; c < 10; ++c) {
-        fscanf(fp, "%d", &conv2_b[c]);
+    // conv2_b.shape = [10]
+    for (n = 0; n < 10; ++n) {
+        fscanf(fp, "%d", &conv2_b[n]);
     }
     printf("conv2_b load succeed\n");
     fclose(fp);
@@ -235,9 +243,11 @@ void get_weights() { // 'CHW'format
         exit(1);
     }
     printf("conv3_w open succeed\n");
-    // conv3.shape = [10,1,1]
+    // conv3_w.shape = [1,1,10,10]
     for (c = 0; c < 10; ++c) {
-        fscanf(fp, "%d", &conv3_w[c]);
+        for (n = 0; n < 10; ++n) {
+            fscanf(fp, "%d", &conv3_w[c][n]);
+        }
     }
     printf("conv3_w load succeed\n");
     fclose(fp);
@@ -247,9 +257,9 @@ void get_weights() { // 'CHW'format
         exit(1);
     }
     printf("conv3_b open succeed\n");
-    // conv3.b.shape = [10,1]
-    for (c = 0; c < 10; ++c) {
-        fscanf(fp, "%d", &conv2_b[c]);
+    // conv3_b.shape = [10]
+    for (n = 0; n < 10; ++n) {
+        fscanf(fp, "%d", &conv3_b[n]);
     }
     printf("conv3_b load succeed\n");
     fclose(fp);
