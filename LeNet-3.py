@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Conv2D, MaxPool2D, AvgPool2D
 from tensorflow.keras import Model
@@ -48,16 +49,110 @@ def train():
               callbacks=[logging])
     model.save_weights('./model/20epoches.h5')
 
+def plot_confusion_matrix(confusion_matrix, save_path, title, class_name):
+    confusion_matrix = confusion_matrix.astype('float') / confusion_matrix.sum(axis=1)[:, np.newaxis]
+
+    np.set_printoptions(precision=2)
+
+    ind_array = np.arange(len(class_name))
+    x, y = np.meshgrid(ind_array, ind_array)
+    for x_val, y_val in zip(x.flatten(), y.flatten()):
+        condition_prob = confusion_matrix[y_val, x_val]
+        plt.text(x_val, y_val, "%0.2f"%(condition_prob,),
+                 color='red', fontsize=15, va='center', ha='center')
+    plt.imshow(confusion_matrix, interpolation='nearest', cmap=plt.cm.binary)
+    plt.title(title)
+    plt.colorbar()
+    xlocations = np.array(range(len(class_name)))
+    plt.xticks(xlocations, class_name, rotation=90)
+    plt.yticks(xlocations, class_name)
+    plt.ylabel('Label')
+    plt.xlabel('Prediction')
+
+    tick_marks = np.array(range(len(class_name))) + 0.5
+    plt.gca().set_xticks(tick_marks, minor=True)
+    plt.gca().set_yticks(tick_marks, minor=True)
+    plt.gca().xaxis.set_ticks_position('none')
+    plt.gca().yaxis.set_ticks_position('none')
+    plt.grid(True, which='minor', linestyle='-')
+    plt.gcf().subplots_adjust(bottom=0.15)
+
+    plt.savefig(save_path, format='png')
+    plt.show()
+
+
 def evaluate():
     cnt = 0
     trainset_data, trainset_label = load_dataset()
+    confusion_matrix = np.zeros((10, 10))
     for i in range(10000):
         res = np.argmax(model(trainset_data[i:i+1,:,:,:]))
+        confusion_matrix[trainset_label[i], res] += 1
         if res == trainset_label[i]:
             cnt += 1
+        else:
+            plt.imshow(trainset_data[i:i+1,:,:,:].reshape(28,28))
+            plt.title(res)
+            plt.savefig("./wrong_predictions/No."+str(i)+':'+str(res)+'.png', format='png')
+    plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(10))
     print('acc = ' + str(cnt/10000.0))
 
-def save_weights():
+
+def save_weights_as_float():
+    # conv1_w [5,5,5]
+    print('saving conv1_w...')
+    with open('./model/conv1_w_float.txt', 'w') as f:
+        conv1_w = model.get_layer(index=1).get_weights()[0]
+        print(conv1_w.shape)
+        for h in range(5):
+            for w in range(5):
+                for c in range(1):
+                    for n in range(5):
+                        f.write(str(conv1_w[h, w, c, n]) + '\n')
+    # conv1_b [5]
+    print('saving conv1_b...')
+    with open('./model/conv1_b_float.txt', 'w') as f:
+        conv1_b = model.get_layer(index=1).get_weights()[1]
+        print(conv1_b.shape)
+        for n in range(5):
+            f.write(str(conv1_b[n]) + '\n')
+    # conv1_w [5,5,5,10]
+    print('saving conv2_w...')
+    with open('./model/conv2_w_float.txt', 'w') as f:
+        conv2_w = model.get_layer(index=3).get_weights()[0]
+        print(conv2_w.shape)
+        for h in range(5):
+            for w in range(5):
+                for c in range(5):
+                    for n in range(10):
+                        f.write(str(conv2_w[h, w, c, n]) + '\n')
+    # conv2_b [10]
+    print('saving conv2_b...')
+    with open('./model/conv2_b_float.txt', 'w') as f:
+        conv2_b = model.get_layer(index=3).get_weights()[1]
+        print(conv2_b.shape)
+        for n in range(10):
+            f.write(str(conv2_b[n]) + '\n')
+    # conv3_w [1,1,10,10]
+    print('saving conv3_w...')
+    with open('./model/conv3_w_float.txt', 'w') as f:
+        conv3_w = model.get_layer(index=6).get_weights()[0]
+        print(conv3_w.shape)
+        for h in range(1):
+            for w in range(1):
+                for c in range(10):
+                    for n in range(10):
+                        f.write(str(conv3_w[h, w, c, n]) + '\n')
+    # conv3_b [10]
+    print('saving conv3_b...')
+    with open('./model/conv3_b_float.txt', 'w') as f:
+        conv3_b = model.get_layer(index=6).get_weights()[1]
+        print(conv3_b.shape)
+        for n in range(10):
+            f.write((str(conv3_b[n])) + '\n')
+    print('weights saved !')
+
+def save_weights_as_int():
     MULTI = 1000
     # conv1_w [5,5,5]
     print('saving conv1_w...')
@@ -112,23 +207,12 @@ def save_weights():
             f.write((str(int(conv3_b[n] * MULTI))) + '\n')
     print('weights saved !')
 
-model.load_weights('./200eps.h5')
-# save_weights()
+
+# model.load_weights('./200eps.h5')
 # evaluate()
 
-conv1_w = np.zeros((5, 5, 5))
-with open('./model/conv1_w.txt', 'r') as f:
-    for h in range(5):
-        for w in range(5):
-            for n in range(5):
-                conv1_w[h, w, n] = float(f.readline())
-print(conv1_w)
-print(model.get_layer(index=1).get_weights()[0])
-
-
-
-# with open('./test5.22.txt', 'w') as file:
-#     file.write(str())
-
-# with open('C:/Users/Vino/Desktop/dsp/conv/data.txt') as file:
-#     data = file
+confusion_matrix = np.ones((3,3))
+confusion_matrix[0,0] = 0
+confusion_matrix[2,1] = 10
+plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(3))
+print(confusion_matrix)
