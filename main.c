@@ -66,12 +66,14 @@ void conv1() { // [28,28,1] * [5,5,1,5] -> [24,24,5]
     for (n = 0; n < 5; n++) {
         for (h = 0; h < 24; h++) {
             for (w = 0; w < 24; w++) {
-                //compute convlution result of one output pixel
+                layer1_conv[h][w][n] = 0;
+                //compute convolution result of one output pixel
                 for (x = 0; x < 5; x++) {
                     for (y = 0; y < 5; y++) {
-                        layer1_conv[h][w][n] += input[h + x][w + y] * conv1_w[x][y][n] + conv1_b[n];
+                        layer1_conv[h][w][n] += input[h + x][w + y] * conv1_w[x][y][n];
                     }
                 }
+                layer1_conv[h][w][n] += conv1_b[n];
                 //relu
                 if (layer1_conv[h][w][n] < 0)layer1_conv[h][w][n] = 0;
             }
@@ -103,14 +105,16 @@ void conv2() { // [12,12,5] * [5,5,5,10] -> [8,8,10]
     for (n = 0; n < 10; n++) {
         for (h = 0; h < 8; h++) {
             for (w = 0; w < 8; w++) {
-                //compute convlution result of one output pixel
+                layer2_conv[h][w][n] = 0;
+                //compute convolution result of one output pixel
                 for (x = 0; x < 5; x++) {
                     for (y = 0; y < 5; y++) {
                         for (c = 0; c < 5; c++) {
-                            layer2_conv[h][w][n] += layer1_pool[h + x][w + y][c] * conv2_w[x][y][c][n] + conv2_b[n];
+                            layer2_conv[h][w][n] += layer1_pool[h + x][w + y][c] * conv2_w[x][y][c][n];
                         }
                     }
                 }
+                layer2_conv[h][w][n] += conv2_b[n];
                 //relu
                 if (layer2_conv[h][w][n] < 0)layer2_conv[h][w][n] = 0;
             }
@@ -139,6 +143,7 @@ void pooling2() { // [8,8,10] -> [4,4,10]
 void pooling3() { // [4,4,10] -> [1,1,10]
     int h, w, c;
     for (c = 0; c < 10; c++) {
+        layer3_pool[c] = 0;
         //compute average pooling result of one output pixel
         for (h = 0; h < 4; h++) {
             for (w = 0; w < 4; w++) {
@@ -151,11 +156,13 @@ void pooling3() { // [4,4,10] -> [1,1,10]
 void conv3() { // [1,1,10] * [1,1,10,10] -> [1,1,10]
     int c, n;
     for (n = 0; n < 10; n++) {
-        //compute convlution result of one output pixel
+        layer3_conv[n] = 0;
+        //compute convolution result of one output pixel
         for (c = 0; c < 10; c++) {
-            layer3_conv[n] += layer3_pool[c] * conv3_w[c][n] + conv3_b[n];
+            layer3_conv[n] += layer3_pool[c] * conv3_w[c][n];
         }
-        //no need of softmax activation
+        layer3_conv[n] += conv3_b[n];
+        //no need of softmax activation, as no need to compute loss function
     }
 }
 
