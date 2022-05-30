@@ -25,8 +25,8 @@ model.summary()
 
 
 def load_dataset():
-    trainset_label = np.loadtxt('C:/Users/Vino/Desktop/dsp/conv/label.txt', dtype=int).reshape((10000, 1))
-    trainset_data = np.loadtxt('C:/Users/Vino/Desktop/dsp/conv/data.txt').reshape((10000, 28, 28, 1))
+    trainset_label = np.loadtxt('C:/Users/Vino/Desktop/dsp/conv/data/label.txt', dtype=int).reshape((10000, 1))
+    trainset_data = np.loadtxt('C:/Users/Vino/Desktop/dsp/conv/data/data.txt').reshape((10000, 28, 28, 1))
     return trainset_data, trainset_label
 
 
@@ -59,8 +59,8 @@ def plot_confusion_matrix(confusion_matrix, save_path, title, class_name):
     for x_val, y_val in zip(x.flatten(), y.flatten()):
         condition_prob = confusion_matrix[y_val, x_val]
         plt.text(x_val, y_val, "%0.2f"%(condition_prob,),
-                 color='red', fontsize=15, va='center', ha='center')
-    plt.imshow(confusion_matrix, interpolation='nearest', cmap=plt.cm.binary)
+                 color='black', fontsize=5, va='center', ha='center')
+    plt.imshow(confusion_matrix, interpolation='nearest', cmap=plt.cm.Set3)
     plt.title(title)
     plt.colorbar()
     xlocations = np.array(range(len(class_name)))
@@ -93,7 +93,8 @@ def evaluate():
         else:
             plt.imshow(trainset_data[i:i+1,:,:,:].reshape(28,28))
             plt.title(res)
-            plt.savefig("./wrong_predictions/No."+str(i)+':'+str(res)+'.png', format='png')
+            plt.savefig("./wrong_predictions/"+str(res)+" for " +str(trainset_label[i])+" at "+ "No "+str(i)+'.png', format='png')
+        print(str(i)+" / 10000 ......")
     plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(10))
     print('acc = ' + str(cnt/10000.0))
 
@@ -208,11 +209,6 @@ def save_weights_as_int():
     print('weights saved !')
 
 
-# model.load_weights('./200eps.h5')
-# evaluate()
-
-confusion_matrix = np.ones((3,3))
-confusion_matrix[0,0] = 0
-confusion_matrix[2,1] = 10
-plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(3))
-print(confusion_matrix)
+model.load_weights('./model/800eps.h5')
+evaluate()
+save_weights_as_int()
