@@ -147,7 +147,7 @@ void pooling3() { // [4,4,10] -> [1,1,10]
         //compute average pooling result of one output pixel
         for (h = 0; h < 4; h++) {
             for (w = 0; w < 4; w++) {
-                layer3_pool[c] += layer2_pool[h][w][c] / 4;
+                layer3_pool[c] += layer2_pool[h][w][c] / 16;
             }
         }
     }
