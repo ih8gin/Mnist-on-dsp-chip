@@ -43,14 +43,14 @@
 #pragma DATA_ALIGN (output, 16);
 
 // format HWCN
-int dataset[COUNT_OF_DATA][IMAGE_SIZE][IMAGE_SIZE];
-int labels[COUNT_OF_DATA];
-int conv1_w[5][5][5];
-int conv1_b[5];
-int conv2_w[5][5][5][10];
-int conv2_b[10];
-int conv3_w[10][10];
-int conv3_b[10];
+long dataset[COUNT_OF_DATA][IMAGE_SIZE][IMAGE_SIZE];
+long labels[COUNT_OF_DATA];
+long conv1_w[5][5][5];
+long conv1_b[5];
+long conv2_w[5][5][5][10];
+long conv2_b[10];
+long conv3_w[10][10];
+long conv3_b[10];
 long input[28][28];
 long layer1_conv[24][24][5];
 long layer1_pool[12][12][5];
@@ -86,6 +86,7 @@ void pooling1() { // [24,24,5] -> [12,12,5]
     for (c = 0; c < 5; c++) {
         for (h = 0; h < 12; h++) {
             for (w = 0; w < 12; w++) {
+                layer1_pool[h][w][c] = 0;
                 //compute max pooling result of one output pixel
                 for (x = 0; x < 2; x++) {
                     for (y = 0; y < 2; y++) {
@@ -127,6 +128,7 @@ void pooling2() { // [8,8,10] -> [4,4,10]
     for (c = 0; c < 10; c++) {
         for (h = 0; h < 4; h++) {
             for (w = 0; w < 4; w++) {
+                layer2_pool[h][w][c] = 0;
                 //compute max pooling result of one output pixel
                 for (x = 0; x < 2; x++) {
                     for (y = 0; y < 2; y++) {
@@ -189,28 +191,28 @@ void get_weights() { // 'HWCN'format
         printf("conv1_w open failed\n");
         exit(1);
     }
-    printf("conv1_w open succeed\n");
+    printf("conv1_w open succeed...\n");
     // conv1_w.shape = [5,5,1,5]
     for (h = 0; h < 5; ++h) {
         for (w = 0; w < 5; ++w) {
             for (n = 0; n < 5; ++n) {
-                fscanf(fp, "%d", &conv1_w[h][w][n]);
+                fscanf(fp, "%ld", &conv1_w[h][w][n]);
             }
         }
     }
-    printf("conv1_w load succeed\n");
+    printf("conv1_w load succeed!\n");
     fclose(fp);
 
     if (NULL == (fp = fopen("..\\data\\conv1_b.txt", "r"))) {
         printf("conv1_b open failed\n");
         exit(1);
     }
-    printf("conv1_b open succeed\n");
+    printf("conv1_b open succeed...\n");
     // conv1_b.shape = [5]
     for (n = 0; n < 5; ++n) {
-        fscanf(fp, "%d", &conv1_b[n]);
+        fscanf(fp, "%ld", &conv1_b[n]);
     }
-    printf("conv1_b load succeed\n");
+    printf("conv1_b load succeed!\n");
     fclose(fp);
 
 
@@ -218,30 +220,30 @@ void get_weights() { // 'HWCN'format
         printf("conv2_w open failed\n");
         exit(1);
     }
-    printf("conv2_w open succeed\n");
+    printf("conv2_w open succeed...\n");
     // conv2_w.shape = [5,5,5,10]
     for (h = 0; h < 5; ++h) {
         for (w = 0; w < 5; ++w) {
             for (c = 0; c < 5; ++c) {
                 for (n = 0; n < 10; ++n) {
-                    fscanf(fp, "%d", &conv2_w[h][w][c][n]);
+                    fscanf(fp, "%ld", &conv2_w[h][w][c][n]);
                 }
             }
         }
     }
-    printf("conv2_w load succeed\n");
+    printf("conv2_w load succeed!\n");
     fclose(fp);
 
     if (NULL == (fp = fopen("..\\data\\conv2_b.txt", "r"))) {
         printf("conv2_b open failed\n");
         exit(1);
     }
-    printf("conv2_b open succeed\n");
+    printf("conv2_b open succeed...\n");
     // conv2_b.shape = [10]
     for (n = 0; n < 10; ++n) {
-        fscanf(fp, "%d", &conv2_b[n]);
+        fscanf(fp, "%ld", &conv2_b[n]);
     }
-    printf("conv2_b load succeed\n");
+    printf("conv2_b load succeed!\n");
     fclose(fp);
 
 
@@ -249,26 +251,26 @@ void get_weights() { // 'HWCN'format
         printf("conv3_w open failed\n");
         exit(1);
     }
-    printf("conv3_w open succeed\n");
+    printf("conv3_w open succeed...\n");
     // conv3_w.shape = [1,1,10,10]
     for (c = 0; c < 10; ++c) {
         for (n = 0; n < 10; ++n) {
-            fscanf(fp, "%d", &conv3_w[c][n]);
+            fscanf(fp, "%ld", &conv3_w[c][n]);
         }
     }
-    printf("conv3_w load succeed\n");
+    printf("conv3_w load succeed!\n");
     fclose(fp);
 
     if (NULL == (fp = fopen("..\\data\\conv3_b.txt", "r"))) {
         printf("conv3_b open failed\n");
         exit(1);
     }
-    printf("conv3_b open succeed\n");
+    printf("conv3_b open succeed...\n");
     // conv3_b.shape = [10]
     for (n = 0; n < 10; ++n) {
-        fscanf(fp, "%d", &conv3_b[n]);
+        fscanf(fp, "%ld", &conv3_b[n]);
     }
-    printf("conv3_b load succeed\n");
+    printf("conv3_b load succeed!\n");
     fclose(fp);
 }
 
@@ -279,13 +281,15 @@ void get_dataset() { // 'NHW'format
         printf("data open failed\n");
         exit(1);
     }
+    printf("image data open succeed...\n");
     for (n = 0; n < COUNT_OF_DATA; ++n) {
         for (h = 0; h < 28; ++h) {
             for (w = 0; w < 28; ++w) {
-                fscanf(fp, "%d", &dataset[n][h][w]);
+                fscanf(fp, "%ld", &dataset[n][h][w]);
             }
         }
     }
+    printf("image data load succeed!\n");
     fclose(fp);
 }
 
@@ -296,9 +300,11 @@ void get_labels() {
         printf("label open failed\n");
         exit(1);
     }
+    printf("labels open succeed...\n");
     for (i = 0; i < COUNT_OF_DATA; i++) {
-        fscanf(fp, "%d", &labels[i]);
+        fscanf(fp, "%ld", &labels[i]);
     }
+    printf("labels load succeed!\n");
     fclose(fp);
 }
 
