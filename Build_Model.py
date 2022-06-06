@@ -81,22 +81,42 @@ def plot_confusion_matrix(confusion_matrix, save_path, title, class_name):
     plt.show()
 
 
+# def evaluate():
+#     cnt = 0
+#     trainset_data, trainset_label = load_dataset()
+#     confusion_matrix = np.zeros((10, 10))
+#     for i in range(10000):
+#         res = np.argmax(model(trainset_data[i:i+1,:,:,:]))
+#         confusion_matrix[trainset_label[i], res] += 1
+#         if res == trainset_label[i]:
+#             cnt += 1
+#         else:
+#             plt.imshow(trainset_data[i:i+1,:,:,:].reshape(28,28))
+#             plt.title(res)
+#             plt.savefig("./wrong_predictions/"+ "No "+str(i)+str(res)+" for " +str(trainset_label[i])+'.png', format='png')
+#         print(str(i)+" / 10000 ......")
+#     plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(10))
+#     print('acc = ' + str(cnt/10000.0))
+
 def evaluate():
-    cnt = 0
+    cnt1 = 0
     trainset_data, trainset_label = load_dataset()
-    confusion_matrix = np.zeros((10, 10))
-    for i in range(10000):
+    for i in range(8000):
         res = np.argmax(model(trainset_data[i:i+1,:,:,:]))
-        confusion_matrix[trainset_label[i], res] += 1
         if res == trainset_label[i]:
-            cnt += 1
-        else:
-            plt.imshow(trainset_data[i:i+1,:,:,:].reshape(28,28))
-            plt.title(res)
-            plt.savefig("./wrong_predictions/"+str(res)+" for " +str(trainset_label[i])+" at "+ "No "+str(i)+'.png', format='png')
-        print(str(i)+" / 10000 ......")
-    plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(10))
-    print('acc = ' + str(cnt/10000.0))
+            cnt1 += 1
+        if i % 100 == 0:
+            print(str(i) + " / 10000 ......")
+    cnt2 = 0
+    for i in range(8000, 10000):
+        res = np.argmax(model(trainset_data[i:i+1,:,:,:]))
+        if res == trainset_label[i]:
+            cnt2 += 1
+        if i % 100 == 0:
+            print(str(i) + " / 10000 ......")
+    print('acc on train set = ' + str(cnt1/8000.0))
+    print('acc on validation set = ' + str(cnt2/2000.0))
+    print('overall acc = ' + str((cnt1+cnt2)/10000.0))
 
 
 def save_weights_as_float():
@@ -211,4 +231,3 @@ def save_weights_as_int():
 
 model.load_weights('./model/800eps.h5')
 evaluate()
-save_weights_as_int()
