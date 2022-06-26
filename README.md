@@ -7,7 +7,7 @@ run CNN on C6416
 下面展示五种被广泛使用的模型：
 
 ### i.	 Baseline Liner Classifier
-
+<img source='./pictures/basic linear classifier.png' width=80>
 图1. 线性分类器<br>
   最简单的线性分类器。每个输入像素值构成每个输出单元的加权和。总和最高的输出单元表示输入字符的类别。因此，我们可以看到，图像被视为一维向量，并连接到一个10输出的向量。测试    集错误率为8.4%
 
