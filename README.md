@@ -49,7 +49,7 @@ run CNN on C6416
  
 图14. 模型在训练集和测试集上的表现
 ### ii.	混淆矩阵
-pictures/confusion_matrix.jpg
+[pictures/confusion_matrix.jpg](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/5b5208bf9fb137bb22b1a7b6ef480692029e5eeb/pictures/confusion_matrix.jpg)
 混淆矩阵反应了多分类模型对各个类别的特征学习情况，从中可以查看各种条件概率，从左上到右下的对角线上的概率为各个类别的召回率。从各个条件概率中，可以全面、直观的反应模型的优缺点，能够给研究人员提供明确的改进方向。
  
 图15. 训练238epochs的混淆矩阵
