@@ -7,7 +7,7 @@ run CNN on C6416
 下面展示五种被广泛使用的模型：
 
 ### i.	 Baseline Liner Classifier
-<img source='./pictures/basic_linear_classifier.png' width=80>
+[<img source='[./pictures/basic_linear_classifier.png](https://github.com/ih8gin/Mnist-on-dsp-chip/commits/main/pictures/basic%20linear%20classifier.png)' width=80>](https://github.com/ih8gin/Mnist-on-dsp-chip/commits/main/pictures/basic%20linear%20classifier.png)
 图1. 线性分类器<br>
   最简单的线性分类器。每个输入像素值构成每个输出单元的加权和。总和最高的输出单元表示输入字符的类别。因此，我们可以看到，图像被视为一维向量，并连接到一个10输出的向量。测试    集错误率为8.4%
 
@@ -21,6 +21,7 @@ run CNN on C6416
 可以发现，通过增加隐藏层，错误率在降低，但这种改善越来越缓慢。增加某层网络神经元的数量不能有效提升模型的表现。
 
 ### iv.	LeNet-1
+[<img source='./pictures/LeNet1.png' width=80>](https://github.com/ih8gin/Mnist-on-dsp-chip/commits/main/pictures/LeNet1.png)
 图4. LeNet-1网络结构<br>
   在Lenet-1中，28*28的输入图像→4个24*24 feature maps卷积层(5*5 ) →平均池化层(2*2）→8个12*12 feature maps 卷积层(5*5) →平均池化层(2*2）→直接全连接后输出
   引入卷积和池化层后，LeNet-1对测试数据的错误率为1.7%
