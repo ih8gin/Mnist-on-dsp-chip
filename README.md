@@ -21,7 +21,7 @@ run CNN on C6416
 可以发现，通过增加隐藏层，错误率在降低，但这种改善越来越缓慢。增加某层网络神经元的数量不能有效提升模型的表现。
 
 ### iv.	LeNet-1
-![pictures/LeNet1.jpg](https://github.com/ih8gin/Mnist-on-dsp-chip/commits/main/pictures/LeNet1.jpg)
+![pictures/LeNet1.jpg](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/e93c7e9e1eda725ee7715595e539f87b58716cba/pictures/LeNet1.jpg)
 <br>
 图4. LeNet-1网络结构<br>
   在Lenet-1中，28*28的输入图像→4个24*24 feature maps卷积层(5*5 ) →平均池化层(2*2）→8个12*12 feature maps 卷积层(5*5) →平均池化层(2*2）→直接全连接后输出
