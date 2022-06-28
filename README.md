@@ -49,28 +49,33 @@ run CNN on C6416
 模型结构和示意图如下：<br>
  
 ![pictures/%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84.png)
-<br>图8. 网络结构图<br>
+<br>图6. 网络结构图<br>
 
 ![pictures/%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E5%B1%95%E7%A4%BA.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E5%B1%95%E7%A4%BA.png)
-<br>图9. 模型结构参数详情<br>
+<br>图7. 模型结构参数详情<br>
 
 ## Train
 
 ### i.	loss曲线
 根据上述训练过程，结合tensorflow2内置的Earlystop方法，确定最佳迭代步数为238个epochs，训练过程中loss函数曲线及accuracy曲线如下：
+
 ![pictures/238eps_loss.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/238eps_loss.png)
-<br>图12. 238个epochs下的loss函数曲线<br>
+<br>图8. 238个epochs下的loss函数曲线<br>
+
 ![pictures/238eps_acc.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/238eps_acc.png)
- <br>图13. 238个epochs下的mAP函数曲线<br>
+ <br>图9. 238个epochs下的mAP函数曲线<br>
+ 
 最终达到测试集上mAP为0.9575<br>
+
 ![pictures/performance.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/8df6f37d4fe6ea499cfa1a9db793827df1c65007/pictures/performance.png)
-<br>图14. 模型在训练集和测试集上的表现<br>
+<br>图10. 模型在训练集和测试集上的表现<br>
+
 ### ii.	混淆矩阵
 <br>
 混淆矩阵反应了多分类模型对各个类别的特征学习情况，从中可以查看各种条件概率，从左上到右下的对角线上的概率为各个类别的召回率。从各个条件概率中，可以全面、直观的反应模型的优缺点，能够给研究人员提供明确的改进方向。
 
 ![pictures/confusion_matrix.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/confusion_matrix.png)
-<br>图15. 训练238epochs的混淆矩阵<br>
+<br>图11. 训练238epochs的混淆矩阵<br>
 
 从混淆矩阵可以看出，模型对各个类别的学习情况都很优秀，没有明显的缺点。对错误分类的深入分析在下一节中详细展开说明。
 
@@ -78,13 +83,13 @@ run CNN on C6416
 将错误案例全部导出后，经过分析，发现导致模型预测错误的原因主要是由于输入图片可能存在三个方面的问题：字迹不清晰，存在多余的笔划，书写歪斜不正：
 
 ![pictures/%E9%83%A8%E5%88%86%E9%9A%BE%E4%BE%8B%E5%B1%95%E7%A4%BA.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E9%83%A8%E5%88%86%E9%9A%BE%E4%BE%8B%E5%B1%95%E7%A4%BA.png)
-<br>图16. 部分难例展示<br>
+<br>图12. 部分难例展示<br>
 
 ### 字迹不清
 有些输入图片中笔划不清，断断续续，这是由于数据集本身的问题，或者是对原始图片进行二值化处理时阈值选择不合理导致的。模型会被不连续的笔划干扰，说明模型输出层单元的感受野不足，不能有效整合全局信息。
 
 ![pictures/%E9%9A%BE%E4%BE%8B-%E5%AD%97%E8%BF%B9%E4%B8%8D%E6%B8%85.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E9%9A%BE%E4%BE%8B-%E5%AD%97%E8%BF%B9%E4%B8%8D%E6%B8%85.png)
-<br>图17. 典型字迹不清的难例<br>
+<br>图13. 典型字迹不清的难例<br>
 
 这个问题浅层的模型很难解决，需要加深网络层数增大输出层参数的感受野；或者在模型头部使用传统的全连接输出层取代平均值池化+1*1卷积的卷积输出层，牺牲模型精简程度也能有效改善感受野不足的问题。
 ### 多余比划
@@ -96,19 +101,19 @@ run CNN on C6416
 * 7在中间多加一条短划线
 
 ![pictures/%E9%9A%BE%E4%BE%8B-%E4%B9%A6%E5%86%99%E4%B9%A0%E6%83%AF%E5%B7%AE%E5%BC%82.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E9%9A%BE%E4%BE%8B-%E4%B9%A6%E5%86%99%E4%B9%A0%E6%83%AF%E5%B7%AE%E5%BC%82.png)
-<br>图18. 书写习惯差异导致的难例<br>
+<br>图14. 书写习惯差异导致的难例<br>
 
 除了书写习惯的差异外，部分输入还存在错误的多余笔划，而模型在尝试识别数字4和5时对错误的多余笔划尤其敏感，这与数字4和5的形状特征导致的。
 
 ![pictures/%E9%9A%BE%E4%BE%8B-%E5%A4%9A%E4%BD%99%E7%AC%94%E5%88%92.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E9%9A%BE%E4%BE%8B-%E5%A4%9A%E4%BD%99%E7%AC%94%E5%88%92.png)
-<br>图19. 存在错误多余笔划的难例<br>
+<br>图15. 存在错误多余笔划的难例<br>
 
 要解决这个问题需要增强模型的泛化能力。可以在训练过程中进行数据增强，通过难例挖掘来加强对模型上述两个问题的适应性。但数据增强的效果是有限的，这受制于模型的参数规模，目前采用的模型参数规模太小，在不增大规模的情况下，很难大幅增强泛化能力，并且模型会存在无法收敛的风险。
 ###  歪曲不正
 输入的数据中还有一部分，存在角度偏移的问题，特定的数字对角度偏移尤其敏感
  
 ![pictures/%E9%9A%BE%E4%BE%8B-%E8%A7%92%E5%BA%A6%E5%81%8F%E7%A7%BB.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E9%9A%BE%E4%BE%8B-%E8%A7%92%E5%BA%A6%E5%81%8F%E7%A7%BB.png)
-<br>图20. 由于角度偏移导致的难例<br>
+<br>图16. 由于角度偏移导致的难例<br>
 
 要解决这个问题可以从两个方面入手：
 * 其一是增强模型的泛化能力，但是这需要付出比较大的代价（训练步长与参数规模）；
@@ -116,6 +121,6 @@ run CNN on C6416
 ### 其他
 
 ![pictures/%E9%9A%BE%E4%BE%8B-%E5%85%B6%E4%BB%96.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E9%9A%BE%E4%BE%8B-%E5%85%B6%E4%BB%96.png)
-<br>图21. 其他的一些难例<br>
+<br>图17. 其他的一些难例<br>
 
 其他的难例主要出现在68、179这两组中，初步分析可能是由于卷积核太大了，细节提取有些粗糙。将5*5的单层卷积核改为3*3的双层卷积核，也许可以改善这一问题。这样做也能减少参数数量，但是会增加运算量。
