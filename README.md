@@ -7,21 +7,23 @@ run CNN on C6416
 下面展示五种被广泛使用的模型：
 
 ### i.	 Baseline Liner Classifier
-![(https://github.com/ih8gin/Mnist-on-dsp-chip/commits/main/pictures/basic%20linear%20classifier.jpg)](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/a2b947332ab5b99eb2a0e6d2060d8b21599ab037/pictures/basic%20linear%20classifier.jpg)
+![pictures/basic%20linear%20classifier.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/f3bd78337ca8c68460ff4926a832c1db3926d06c/pictures/basic%20linear%20classifier.png)
 图1. 线性分类器<br>
   最简单的线性分类器。每个输入像素值构成每个输出单元的加权和。总和最高的输出单元表示输入字符的类别。因此，我们可以看到，图像被视为一维向量，并连接到一个10输出的向量。测试    集错误率为8.4%
 
 ### ii.	One-Hidden-Layer Fully Connected Multilayer NN
+![pictures/one%20hidden%20layer%20fcnn.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/one%20hidden%20layer%20fcnn.png)
 图2. 单层隐藏层的全连接神经网络结构<br>
 	在输入层和输出层之间增加隐含层，隐含层神经元数量为300个，即20*20→300→10网络，测试集错误率为3.8%。将隐含层增加到1000个神经元，即20*20→1000→10网络，测试集错误率为3.6%，提升并不大。
   
 ### iii.	Two-Hidden-Layer Fully Connected Multilayer NN
+![pictures/two%20hidden%20layer%20fcnn.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/two%20hidden%20layers%20fcnn.png)
 图3. 两层隐藏层的全连接神经网络结构<br>
 	在输入层和输出层之间增加两个隐藏层，，即20*20→300→100→10网络，测试集错误率为3.05%。增加隐含层到20*20→1000→150→10网络，测试集错误率为2.95%，提升并不大。
 可以发现，通过增加隐藏层，错误率在降低，但这种改善越来越缓慢。增加某层网络神经元的数量不能有效提升模型的表现。
 
 ### iv.	LeNet-1
-![pictures/LeNet1.jpg](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/e93c7e9e1eda725ee7715595e539f87b58716cba/pictures/LeNet1.jpg)
+![pictures/LeNet1.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/LeNet1.png)
 <br>
 图4. LeNet-1网络结构<br>
   在Lenet-1中，28*28的输入图像→4个24*24 feature maps卷积层(5*5 ) →平均池化层(2*2）→8个12*12 feature maps 卷积层(5*5) →平均池化层(2*2）→直接全连接后输出
@@ -29,31 +31,43 @@ run CNN on C6416
   值得注意的是，在作者发明LeNet时，他们使用平均池化层，输出2*2特征图的平均值。目前很多LeNet实现使用max pooling只输出2×2 feature map的最大值，这有助于加快训练速度。当选择最强的特征时，反向传播可以得到较大的梯度。
   
 ### v.	LeNet-4 
+![pictures/LeNet4.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/LeNet4.png)
 图4. LeNet-4网络结构<br>
   在Lenet-4中，32*32的输入图像→4个28*28 feature maps卷积层(5*5 ) →平均池化层(2*2）→6个10*10 feature maps 卷积层(5*5) →平均池化层(2*2）→全连接到120个神经元→全连接到10个输出神经元
   在输出端增加了全连接层，测试集错误率为1.1%
 
 ### vi.	LeNet-5
+![pictures/LeNet5.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/LeNet5.png)
 图5. LeNet-5网络结构<br>
   LeNet-5是最受初学者实践时欢迎的
   在Lenet-5中，32*32的输入图像→6个28*28 feature maps卷积层(5*5 ) →平均池化层(2*2）→16个10*10 feature maps 卷积层(5*5) →平均池化层(2*2）→全连接到120个神经元→全连接到10个输出神经元
   相比LeNet-4，增加了更多的feature map，测试集错误率为1.1%
-  
-## train
+
+## Design
+设计之初，我的目标就在于尽最大可能的精简网络结构，较低运算量，于是选择使用全卷积神经网络（Fully Convolutional NN）有两个隐藏层（一次卷积一次池化）和一个输出头（平均池化+1*1卷积）。<br>
+在输出端使用平均池化降维+预测器（只需要110个参数）代替直接使用全连接预测器（需要410个参数），可以减少参数规模，降低运算量，也可以加速训练时的模型收敛速度。
+模型运算图为28*28输入层→5*24*24（5个5*5卷积核）→5*12*12（最大值池化）→10*8*8（10个5*5卷积核）→10*4*4（最大值池化）→10*1*1（平均值池化）→10输出头。
+模型结构和示意图如下：<br>
+ 
+图8. 网络结构图
+ 
+图9. 模型结构参数详情
+
+## Train
 
 ### i.	loss曲线
 根据上述训练过程，结合tensorflow2内置的Earlystop方法，确定最佳迭代步数为238个epochs，训练过程中loss函数曲线及accuracy曲线如下：
- 
+![pictures/238eps_loss.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/238eps_loss.png)
 图12. 238个epochs下的loss函数曲线
+![pictures/238eps_acc.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/238eps_acc.png)
  图13. 238个epochs下的mAP函数曲线
 最终达到测试集上mAP为0.9575
- 
+![pictures/performance.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/8df6f37d4fe6ea499cfa1a9db793827df1c65007/pictures/performance.png)
 图14. 模型在训练集和测试集上的表现
 ### ii.	混淆矩阵
-![pictures/confusion_matrix.jpg](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/5b5208bf9fb137bb22b1a7b6ef480692029e5eeb/pictures/confusion_matrix.jpg)
 <br>
 混淆矩阵反应了多分类模型对各个类别的特征学习情况，从中可以查看各种条件概率，从左上到右下的对角线上的概率为各个类别的召回率。从各个条件概率中，可以全面、直观的反应模型的优缺点，能够给研究人员提供明确的改进方向。
- 
+![pictures/confusion_matrix.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/confusion_matrix.png)
 图15. 训练238epochs的混淆矩阵
 	从混淆矩阵可以看出，模型对各个类别的学习情况都很优秀，没有明显的缺点。对错误分类的深入分析在下一节中详细展开说明。
 
