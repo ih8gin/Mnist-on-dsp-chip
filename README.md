@@ -138,6 +138,7 @@ run CNN on C6416
 其他的难例主要出现在68、179这两组中，初步分析可能是由于卷积核太大了，细节提取有些粗糙。将5*5的单层卷积核改为3*3的双层卷积核，也许可以改善这一问题。这样做也能减少参数数量，但是会增加运算量。
 
 ## Deploy on C6416
- 
-图22. C6416部署结果
+
+![pictures/load_int.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/66835a75bd0e4e7678ef26673182db9ba4a1e44a/pictures/load_int.png)
+<br>图22. C6416部署结果
 
