@@ -2,6 +2,10 @@
 在TMS320C6416上实现卷积神经网络进行数字手写体识别<br>
 run CNN on TMS320C6416
 
+## 如何使用 How to Use?
+在python上运行Build_Model.py可以实现模型的搭建、训练和参数导出，将模型参数放入conv\data路径下后，使用CCS打开工程，连接到dsp芯片后即可在硬件上运行模型进行预测。<br>
+其中数据集已经通过阈值二值化转成0/1码，Model_test.py文件是用来对C语言实现的模型进行验证。
+
 ## 相关研究
 
 本此实验使用的数据集为MNIST。MNIST 数据集来自美国国家标准与技术研究所, National Institute of Standards and Technology (NIST). 训练集 (training set) 由来自 250 个不同人手写的数字构成, 其中 50% 是高中学生, 50% 来自人口普查局 (the Census Bureau) 的工作人员. 测试集(test set) 也是同样比例的手写数字数据。
