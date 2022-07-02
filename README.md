@@ -1,5 +1,6 @@
 # Mnist-on-dsp-chip
-run CNN on C6416
+在TMS320C6416上实现卷积神经网络进行数字手写体识别<br>
+run CNN on TMS320C6416
 
 ## 相关研究
 
