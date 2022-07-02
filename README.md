@@ -6,7 +6,7 @@ run CNN on TMS320C6416
 在python上运行Build_Model.py可以实现模型的搭建、训练和参数导出，将模型参数放入conv\data路径下后，使用CCS打开工程，连接到dsp芯片后即可在硬件上运行模型进行预测。<br>
 其中数据集已经通过阈值二值化转成0/1码，Model_test.py文件是用来对C语言实现的模型进行验证。
 
-## 相关研究
+## 相关研究 Relative Work
 
 本此实验使用的数据集为MNIST。MNIST 数据集来自美国国家标准与技术研究所, National Institute of Standards and Technology (NIST). 训练集 (training set) 由来自 250 个不同人手写的数字构成, 其中 50% 是高中学生, 50% 来自人口普查局 (the Census Bureau) 的工作人员. 测试集(test set) 也是同样比例的手写数字数据。
 下面展示五种被广泛使用的模型：
@@ -87,7 +87,7 @@ run CNN on TMS320C6416
 ![pictures/performance.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/8df6f37d4fe6ea499cfa1a9db793827df1c65007/pictures/performance.png)
 <br>图10. 模型在训练集和测试集上的表现<br><br>
 
-### ii.	混淆矩阵
+### ii.	混淆矩阵 Confusion Matrix
 <br>
 混淆矩阵反应了多分类模型对各个类别的特征学习情况，从中可以查看各种条件概率，从左上到右下的对角线上的概率为各个类别的召回率。从各个条件概率中，可以全面、直观的反应模型的优缺点，能够给研究人员提供明确的改进方向。
 
@@ -96,7 +96,7 @@ run CNN on TMS320C6416
 
 从混淆矩阵可以看出，模型对各个类别的学习情况都很优秀，没有明显的缺点。对错误分类的深入分析在下一节中详细展开说明。
 
-## 难例分析
+## 难例分析 Analysis
 将错误案例全部导出后，经过分析，发现导致模型预测错误的原因主要是由于输入图片可能存在三个方面的问题：字迹不清晰，存在多余的笔划，书写歪斜不正：
 
 ![pictures/%E9%83%A8%E5%88%86%E9%9A%BE%E4%BE%8B%E5%B1%95%E7%A4%BA.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/cb831740a41b4ea293c0d690ef7bc62a1d40b1e0/pictures/%E9%83%A8%E5%88%86%E9%9A%BE%E4%BE%8B%E5%B1%95%E7%A4%BA.png)
