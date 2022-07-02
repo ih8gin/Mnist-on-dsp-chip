@@ -1,0 +1,38 @@
+; Code Composer Project File, Version 2.0 (do not modify or remove this line)
+
+[Project Settings]
+ProjectDir="F:\DSP\dsp pro\SXT\OCR0107\"
+ProjectType=Executable
+CPUFamily=TMS320C64XX
+Tool="Compiler"
+Tool="CustomBuilder"
+Tool="DspBiosBuilder"
+Tool="Linker"
+Config="Debug"
+Config="Release"
+
+[Source Files]
+Source="C:\CCStudio_v3.1\C6000\cgtools\lib\rts6400.lib"
+Source="C:\CCStudio_v3.1\C6000\csl\lib\csl6416.lib"
+Source="C:\CCStudio_v3.1\c6400\dsplib\lib\dsp64x.lib"
+Source="main.c"
+Source="C6416.cmd"
+
+["Compiler" Settings: "Debug"]
+Options=-g -s -pdsw225 -fr"$(Proj_dir)\Debug" -i"C:\CCStudio_v3.3\c6400\imglib\include" -d"CHIP_6416" -mv6400
+
+["Compiler" Settings: "Release"]
+Options=-pdsw225 -o3 -fr"$(Proj_dir)\Release" -mv6400
+
+["Linker" Settings: "Debug"]
+Options=-c -heap800 -o".\Debug\Read_Bmp.out" -stack800 -w -x
+
+["Linker" Settings: "Release"]
+Options=-c -m".\Release\Read_Bmp.map" -o".\Release\Read_Bmp.out" -w -x
+
+["C6416.cmd" Settings: "Debug"]
+LinkOrder=1
+
+["C6416.cmd" Settings: "Release"]
+LinkOrder=1
+

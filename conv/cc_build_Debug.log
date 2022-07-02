@@ -1,0 +1,8 @@
+------------------------------  dsp.pjt - Debug  ------------------------------
+[main.c] "C:\CCStudio_v3.1\C6000\cgtools\bin\cl6x" -g -s -pdsw225 -fr"Z:/user/ES-DSP-2021/wdjdsp/dsp/dsp2/Debug" -i"C:/CCStudio_v3.3/c6400/imglib/include" -d"CHIP_6416" -mv6400 -@"Debug.lkf" "main.c"
+
+[Linking...] "C:\CCStudio_v3.1\C6000\cgtools\bin\cl6x" -@"Debug.lkf"
+<Linking>
+
+Build Complete,
+  0 Errors, 0 Warnings, 0 Remarks.
