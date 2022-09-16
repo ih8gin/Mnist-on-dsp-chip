@@ -5,23 +5,50 @@ from tensorflow.keras import Model
 import numpy as np
 from tensorflow_core.python.keras.callbacks import TensorBoard
 
+
 conv1 = Conv2D(5, (5, 5), activation='relu', name='Conv_1')
 conv2 = Conv2D(10, (5, 5), activation='relu', name='Conv_2')
 conv3 = Conv2D(10, (1, 1), activation='softmax', name='Conv_3')
 
-input_layer = Input(shape=(28, 28, 1))
-layer_1_mid = conv1(input_layer)
-layer_1_out = MaxPool2D((2, 2), name='Pool_1')(layer_1_mid)
-layer_2_mid = conv2(layer_1_out)
-layer_2_out = MaxPool2D((2, 2), name='Pool_2')(layer_2_mid)
-layer_3_mid = AvgPool2D(4, 4, name='Pool_3')(layer_2_out)
-layer_3_out = conv3(layer_3_mid)
-#不加这一层1x1卷积层网络性能很差
-#池化层能够有效的整合、抽象上下文信息，但不具有推断能力
+def generate_BLC():# basa liner classifier
+    # 28*28 -> 10
+    input_layer = Input(shape=(28, 28, 1))
+    layer0 = Flatten()(input_layer)
+    layer1 = Dense(10, activation='relu')(layer0)
+    return Model(input_layer, layer1)
 
+def generate_FCN1():# One-Hidden-Layer Fully Connected Multilayer NN
+    # 28*28 -> 300 -> 10
+    input_layer = Input(shape=(28, 28, 1))
+    layer0 = Flatten()(input_layer)
+    layer1 = Dense(300, activation='relu')(layer0)
+    layer2 = Dense(10, activation='relu')(layer1)
+    return Model(input_layer, layer2)
 
-model = Model(input_layer, layer_3_out)
-model.summary()
+def generate_FCN2():# Two-Hidden-Layer Fully Connected Multilayer NN
+    # 28*28 -> 300 -> 100 -> 10
+    return Model()
+
+def generate_LeNet5():# LeNet5
+    # conv: 6*5*5
+    # average pooling
+    # conv: 16*5*5
+    # 28*28 -> 300 -> 10
+    # fcn: 120
+    # fcn: 10
+    return Model()
+
+def generate_slimNet():
+    input_layer = Input(shape=(28, 28, 1))
+    layer_1_mid = conv1(input_layer)
+    layer_1_out = MaxPool2D((2, 2), name='Pool_1')(layer_1_mid)
+    layer_2_mid = conv2(layer_1_out)
+    layer_2_out = MaxPool2D((2, 2), name='Pool_2')(layer_2_mid)
+    layer_3_mid = AvgPool2D(4, 4, name='Pool_3')(layer_2_out)
+    layer_3_out = conv3(layer_3_mid)
+    #不加这一层1x1卷积层网络性能很差
+    #池化层能够有效的整合、抽象上下文信息，但不具有推断能力
+    return Model(input_layer, layer_3_out)
 
 
 def load_dataset():
@@ -30,11 +57,16 @@ def load_dataset():
     return trainset_data, trainset_label
 
 
-def train():
+def train(type):
     trainset_data, labels = load_dataset()
-    trainset_label = np.zeros((10000, 1, 1, 10))
-    for i in range(10000):
-        trainset_label[i, 0, 0, labels[i][0]] = 1
+    if type == 1:
+        trainset_label = np.zeros((10000, 1, 1, 10))
+        for i in range(10000):
+            trainset_label[i, 0, 0, labels[i][0]] = 1
+    elif type == 2:
+        trainset_label = np.zeros((10000, 10))
+        for i in range(10000):
+            trainset_label[i, labels[i][0]] = 1
     logdir = 'D:\project_files\Python\pythonProject\dsp\log'
     logging = TensorBoard(log_dir=logdir, histogram_freq=1)
     model.compile(optimizer='adam', loss='categorical_crossentropy')
@@ -43,11 +75,11 @@ def train():
     model.fit(trainset_data, trainset_label,
               validation_split=0.2,
               batch_size=8,
-              epochs=1,
+              epochs=2,
               verbose=2,
               shuffle=True,
               callbacks=[logging])
-    model.save_weights('./model/20epoches.h5')
+    model.save_weights('./model/test.h5')
 
 def plot_confusion_matrix(confusion_matrix, save_path, title, class_name):
     confusion_matrix = confusion_matrix.astype('float') / confusion_matrix.sum(axis=1)[:, np.newaxis]
@@ -81,42 +113,33 @@ def plot_confusion_matrix(confusion_matrix, save_path, title, class_name):
     plt.show()
 
 
-# def evaluate():
-#     cnt = 0
-#     trainset_data, trainset_label = load_dataset()
-#     confusion_matrix = np.zeros((10, 10))
-#     for i in range(10000):
-#         res = np.argmax(model(trainset_data[i:i+1,:,:,:]))
-#         confusion_matrix[trainset_label[i], res] += 1
-#         if res == trainset_label[i]:
-#             cnt += 1
-#         else:
-#             plt.imshow(trainset_data[i:i+1,:,:,:].reshape(28,28))
-#             plt.title(res)
-#             plt.savefig("./wrong_predictions/"+ "No "+str(i)+str(res)+" for " +str(trainset_label[i])+'.png', format='png')
-#         print(str(i)+" / 10000 ......")
-#     plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(10))
-#     print('acc = ' + str(cnt/10000.0))
-
 def evaluate():
     cnt1 = 0
+    cnt2 = 0
+    confusion_matrix = np.zeros((10, 10))
     trainset_data, trainset_label = load_dataset()
+
     for i in range(8000):
         res = np.argmax(model(trainset_data[i:i+1,:,:,:]))
         if res == trainset_label[i]:
             cnt1 += 1
         if i % 100 == 0:
             print(str(i) + " / 10000 ......")
-    cnt2 = 0
     for i in range(8000, 10000):
         res = np.argmax(model(trainset_data[i:i+1,:,:,:]))
+        confusion_matrix[trainset_label[i], res] += 1
         if res == trainset_label[i]:
             cnt2 += 1
+        else:
+            plt.imshow(trainset_data[i:i + 1, :, :, :].reshape(28, 28))
+            plt.title(res)
+            plt.savefig("./wrong_predictions/" + "No " + str(i) + str(res) + " for " + str(trainset_label[i]) + '.png',
+                        format='png')
         if i % 100 == 0:
             print(str(i) + " / 10000 ......")
     print('acc on train set = ' + str(cnt1/8000.0))
     print('acc on validation set = ' + str(cnt2/2000.0))
-    print('overall acc = ' + str((cnt1+cnt2)/10000.0))
+    plot_confusion_matrix(confusion_matrix, './confusion_matrix.png', 'Confusion Matrix', np.arange(10))
 
 
 def save_weights_as_float():
@@ -229,5 +252,6 @@ def save_weights_as_int():
     print('weights saved !')
 
 
-model.load_weights('./model/800eps.h5')
-evaluate()
+model = generate_BLC()
+model.summary()
+train(2)
