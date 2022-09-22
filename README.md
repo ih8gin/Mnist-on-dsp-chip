@@ -16,22 +16,22 @@ run CNN on TMS320C6416
 ![pictures/basic%20linear%20classifier.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/f3bd78337ca8c68460ff4926a832c1db3926d06c/pictures/basic%20linear%20classifier.png)
 <br>图1. 线性分类器<br><br>
 
-  最简单的线性分类器。每个输入像素值构成每个输出单元的加权和。总和最高的输出单元表示输入字符的类别。因此，我们可以看到，图像被视为一维向量，并连接到一个10输出的向量。测试集acc为88.84%
+  最简单的线性分类器。每个输入像素值构成每个输出单元的加权和。总和最高的输出单元表示输入字符的类别。因此，我们可以看到，图像被视为一维向量，并连接到一个10输出的向量。测试集acc为92.9%
 
 ### ii.	One-Hidden-Layer Fully Connected Multilayer NN
 
 ![pictures/one%20hidden%20layer%20fcnn.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/one%20hidden%20layer%20fcnn.png)
 <br>图2. 单层隐藏层的全连接神经网络结构<br><br>
 
-在输入层和输出层之间增加隐含层，隐含层神经元数量为300个，即20*20→300→10网络，测试集错误率为3.8%。将隐含层增加到1000个神经元，即20*20→1000→10网络，测试集错误率为3.6%，提升并不大。
+在输入层和输出层之间增加隐含层，隐含层神经元数量为300个，即20*20→300→10网络，测试集acc为96.3%。将隐含层增加到1000个神经元，即20*20→1000→10网络，测试集acc为96.2%，提升并不大。
   
 ### iii.	Two-Hidden-Layer Fully Connected Multilayer NN
 
 ![pictures/two%20hidden%20layer%20fcnn.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/two%20hidden%20layers%20fcnn.png)
 <br>图3. 两层隐藏层的全连接神经网络结构<br><br>
 
-在输入层和输出层之间增加两个隐藏层，，即20*20→300→100→10网络，测试集错误率为3.05%。增加隐含层到20*20→1000→150→10网络，测试集错误率为2.95%，提升并不大。
-可以发现，通过增加隐藏层，错误率在降低，但这种改善越来越缓慢。增加某层网络神经元的数量不能有效提升模型的表现。
+在输入层和输出层之间增加两个隐藏层，，即20*20→300→100→10网络，测试集acc为96.2%。增加隐含层到20*20→1000→150→10网络，测试集错误率为96.3%，提升并不大。
+可以发现，通过增加隐藏层，改善很少。增加某层网络神经元的数量不能有效提升模型的表现。
 
 ### iv.	LeNet-1
 
@@ -57,7 +57,7 @@ run CNN on TMS320C6416
 
   LeNet-5是最受初学者实践时欢迎的
   在Lenet-5中，32*32的输入图像→6个28*28 feature maps卷积层(5*5 ) →平均池化层(2*2）→16个10*10 feature maps 卷积层(5*5) →平均池化层(2*2）→全连接到120个神经元→全连接到10个输出神经元
-  相比LeNet-4，增加了更多的feature map，测试集错误率为1.1%
+  相比LeNet-4，增加了更多的feature map，测试集acc为98.7%
 
 ## Design
 设计之初，我的目标就在于尽最大可能的精简网络结构，较低运算量，于是选择使用全卷积神经网络（Fully Convolutional NN）有两个隐藏层（一次卷积一次池化）和一个输出头（平均池化+1*1卷积）。<br>
