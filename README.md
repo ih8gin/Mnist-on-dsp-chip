@@ -23,14 +23,14 @@ run CNN on TMS320C6416
 ![pictures/one%20hidden%20layer%20fcnn.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/one%20hidden%20layer%20fcnn.png)
 <br>图2. 单层隐藏层的全连接神经网络结构<br><br>
 
-在输入层和输出层之间增加隐含层，隐含层神经元数量为300个，即20*20→300→10网络，测试集acc为96.3%。将隐含层增加到1000个神经元，即20*20→1000→10网络，测试集acc为96.2%，提升并不大。
+在输入层和输出层之间增加隐含层，隐含层神经元数量为300个，即20*20→300→10网络，测试集acc为96.3%。将隐含层增加到1000个神经元，即20*20→1000→10网络，测试集acc为95.75%，过于臃肿的中间层导致了模型的过拟合，使其在测试集上的变现反而下降了。
   
 ### iii.	Two-Hidden-Layer Fully Connected Multilayer NN
 
 ![pictures/two%20hidden%20layer%20fcnn.png](https://github.com/ih8gin/Mnist-on-dsp-chip/blob/91b0d074c8b3de39ec9f5142cefe45f3521900eb/pictures/two%20hidden%20layers%20fcnn.png)
 <br>图3. 两层隐藏层的全连接神经网络结构<br><br>
 
-在输入层和输出层之间增加两个隐藏层，，即20*20→300→100→10网络，测试集acc为96.2%。增加隐含层到20*20→1000→150→10网络，测试集错误率为96.3%，提升并不大。
+在输入层和输出层之间增加两个隐藏层，，即20*20→300→100→10网络，测试集acc为96.2%。增加隐含层到20*20→1000→150→10网络，测试集错误率为95.3%，与上一案例相同，过于臃肿的中间层导致了模型的过拟合，使其在测试集上的变现反而下降了。
 可以发现，通过增加隐藏层，改善很少。增加某层网络神经元的数量不能有效提升模型的表现。
 
 ### iv.	LeNet-1
